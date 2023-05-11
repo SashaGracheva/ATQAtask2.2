@@ -3,6 +3,7 @@ package ru.netology;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Keys;
 
 import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.open;
@@ -23,31 +24,34 @@ public class CardDeliveryTest {
     public void openPage() {
         open("http://localhost:9999/");
     }
-    static void setUp() {
-        Configuration.headless = true;
+    //Код для генерации строк с датами можно было вынести в отдельный метод,
+    // передавать в него количество дней и паттерн для форматирования, а возвращать отформатированную строку для использования в тесте.
+    // Так можно получить универсальный метод для подготовки тестовых данных.
+    public String generateDate(long addDays, String pattern) {
+        return LocalDate.now().plusDays(addDays).format(DateTimeFormatter.ofPattern(pattern));
     }
-
+    String planningDate = generateDate(3, "dd.MM.yyyy");
     @Test
     void shouldCheckCorrectForm() {
         $x("//input[@placeholder=\"Город\"]").val("Санкт-Петербург");
-        $x("//input[@type=\"tel\"]").doubleClick().sendKeys("DELETE");
-        String meetingDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        $x("//input[@placeholder=\"Дата встречи\"]").val(meetingDate);
+        // Для отправки нажатия клавиши Delete в качестве аргумента в метод sendKeys Вы можете передавать Keys.DELETE.
+        // Класс Keys находится в пакете org.openqa.selenium.
+        $x("//input[@type=\"tel\"]").doubleClick().sendKeys(Keys.DELETE);
+        $x("//input[@placeholder=\"Дата встречи\"]").val(planningDate);
         $("[data-test-id='name'] input").val("Иван Смирнов");
         $("[data-test-id='phone'] input").val("+79118888888");
         $("[data-test-id='agreement']").click();
         $x("//*[contains(text(),'Забронировать')]").click();
         $x("//div[@class=\"notification__title\"]").shouldBe(visible, Duration.ofSeconds(15));
-        $("[data-test-id=notification] .notification__content").should(exactText("Встреча успешно забронирована на " + meetingDate));
+        $("[data-test-id=notification] .notification__content").should(exactText("Встреча успешно забронирована на " + planningDate));
 
     }
 
     @Test
     void shouldCheckIncorrectCity() {
         $x("//input[@placeholder=\"Город\"]").val("Винтерфелл");
-        $x("//input[@type=\"tel\"]").doubleClick().sendKeys("DELETE");
-        String meetingDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        $x("//input[@placeholder=\"Дата встречи\"]").val(meetingDate);
+        $x("//input[@type=\"tel\"]").doubleClick().sendKeys(Keys.DELETE);
+        $x("//input[@placeholder=\"Дата встречи\"]").val(planningDate);
         $("[data-test-id='name'] input").val("Иван Смирнов");
         $("[data-test-id='phone'] input").val("+79118888888");
         $("[data-test-id='agreement']").click();
@@ -59,9 +63,8 @@ public class CardDeliveryTest {
     @Test
     void shouldCheckNameEmpty() {
         $x("//input[@placeholder=\"Город\"]").val("Санкт-Петербург");
-        $x("//input[@type=\"tel\"]").doubleClick().sendKeys("DELETE");
-        String meetingDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        $x("//input[@placeholder=\"Дата встречи\"]").val(meetingDate);
+        $x("//input[@type=\"tel\"]").doubleClick().sendKeys(Keys.DELETE);
+        $x("//input[@placeholder=\"Дата встречи\"]").val(planningDate);
         $("[data-test-id='name'] input").val("");
         $("[data-test-id='phone'] input").val("+79118888888");
         $("[data-test-id='agreement']").click();
@@ -73,9 +76,8 @@ public class CardDeliveryTest {
     @Test
     void shouldCheckInvalidName() {
         $x("//input[@placeholder=\"Город\"]").val("Санкт-Петербург");
-        $x("//input[@type=\"tel\"]").doubleClick().sendKeys("DELETE");
-        String meetingDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        $x("//input[@placeholder=\"Дата встречи\"]").val(meetingDate);
+        $x("//input[@type=\"tel\"]").doubleClick().sendKeys(Keys.DELETE);
+        $x("//input[@placeholder=\"Дата встречи\"]").val(planningDate);
         $("[data-test-id='name'] input").val("Jon Snow");
         $("[data-test-id='phone'] input").val("+79118888888");
         $("[data-test-id='agreement']").click();
@@ -88,7 +90,7 @@ public class CardDeliveryTest {
     @Test
     void shouldCheckInvalidDate() {
         $x("//input[@placeholder=\"Город\"]").val("Санкт-Петербург");
-        $x("//input[@type=\"tel\"]").doubleClick().sendKeys("DELETE");
+        $x("//input[@type=\"tel\"]").doubleClick().sendKeys(Keys.DELETE);
         String meetingDate = LocalDate.now().plusDays(2).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $x("//input[@placeholder=\"Дата встречи\"]").val(meetingDate);
         $("[data-test-id='name'] input").val("Иван Смирнов");
@@ -102,9 +104,8 @@ public class CardDeliveryTest {
     @Test
     void shouldCheckInvalidPhone() {
         $x("//input[@placeholder=\"Город\"]").val("Санкт-Петербург");
-        $x("//input[@type=\"tel\"]").doubleClick().sendKeys("DELETE");
-        String meetingDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        $x("//input[@placeholder=\"Дата встречи\"]").val(meetingDate);
+        $x("//input[@type=\"tel\"]").doubleClick().sendKeys(Keys.DELETE);
+        $x("//input[@placeholder=\"Дата встречи\"]").val(planningDate);
         $("[data-test-id='name'] input").val("Иван Смирнов");
         $("[data-test-id='phone'] input").val("+7911888888");
         $("[data-test-id='agreement']").click();
@@ -116,9 +117,8 @@ public class CardDeliveryTest {
     @Test
     void shouldCheckEmptyPhone() {
         $x("//input[@placeholder=\"Город\"]").val("Санкт-Петербург");
-        $x("//input[@type=\"tel\"]").doubleClick().sendKeys("DELETE");
-        String meetingDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        $x("//input[@placeholder=\"Дата встречи\"]").val(meetingDate);
+        $x("//input[@type=\"tel\"]").doubleClick().sendKeys(Keys.DELETE);
+        $x("//input[@placeholder=\"Дата встречи\"]").val(planningDate);
         $("[data-test-id='name'] input").val("Иван Смирнов");
         $("[data-test-id='phone'] input").val("");
         $("[data-test-id='agreement']").click();
@@ -130,9 +130,8 @@ public class CardDeliveryTest {
     @Test
     void shouldMissClickAgreement() {
         $x("//input[@placeholder=\"Город\"]").val("Санкт-Петербург");
-        $x("//input[@type=\"tel\"]").doubleClick().sendKeys("DELETE");
-        String meetingDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        $x("//input[@placeholder=\"Дата встречи\"]").val(meetingDate);
+        $x("//input[@type=\"tel\"]").doubleClick().sendKeys(Keys.DELETE);
+        $x("//input[@placeholder=\"Дата встречи\"]").val(planningDate);
         $("[data-test-id='name'] input").val("Иван Смирнов");
         $("[data-test-id='phone'] input").val("+79118888888");
         $x("//*[contains(text(),'Забронировать')]").click();
